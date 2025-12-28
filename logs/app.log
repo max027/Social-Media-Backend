@@ -1,0 +1,2 @@
+{"timestamp": "2025-11-16T20:41:48.694833500", "level": "INFO", "class": "UserController", "message": "GET: path{/api/users/id/21} username:{21}"}
+{"timestamp": "2025-11-16T20:41:48.763307700", "level": "ERROR", "class": "GlobalExceptionHandler", "message": "Exception occured:User with id:21 not found", "stackstrace": "java.io.PrintWriter@144df0b1"}
