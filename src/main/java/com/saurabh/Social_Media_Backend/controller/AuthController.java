@@ -1,6 +1,5 @@
 package com.saurabh.Social_Media_Backend.controller;
 
-import com.saurabh.Social_Media_Backend.dto.LoginResponse;
 import com.saurabh.Social_Media_Backend.models.Users;
 import com.saurabh.Social_Media_Backend.repo.LoginUserDto;
 import com.saurabh.Social_Media_Backend.repo.RegisterUserDto;
@@ -34,14 +33,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto){
+    public ResponseEntity<Void> authenticate(@RequestBody LoginUserDto loginUserDto){
         Users authenticated=authService.authenticate(loginUserDto);
         String jwtToken=jwtService.generateToken(authenticated);
-
-        LoginResponse response=new LoginResponse();
-
-        response.setToken(jwtToken);
-        response.setExpirationDate(jwtService.getExpiration());
 
         ResponseCookie cookie=ResponseCookie.from("accessToken",jwtToken)
                 .httpOnly(true)
@@ -51,7 +45,7 @@ public class AuthController {
                 .maxAge(60*60)
                 .build();
 
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,cookie.toString()).body(response);
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,cookie.toString()).build();
     }
 
 }
