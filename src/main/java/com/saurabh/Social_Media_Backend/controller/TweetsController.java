@@ -43,4 +43,14 @@ public class TweetsController {
         return ResponseEntity.ok(tweets1);
     }
 
+    //tweets interaction
+
+    @PostMapping("/id/{id}/like")
+    public ResponseEntity<?>likeTweet(@PathVariable long id){
+        validateId(id);
+        tweetsService.likeTweet(id);
+        return ResponseEntity.ok().build();
+    }
+
+
 }

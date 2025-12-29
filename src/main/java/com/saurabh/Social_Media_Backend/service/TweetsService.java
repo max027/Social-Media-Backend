@@ -16,16 +16,17 @@ import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class TweetsService {
    private final TweetsRepo tweetsRepo;
    private final UserRepo userRepo;
 
    private final TweetsMapper tweetsMapper= Mappers.getMapper(TweetsMapper.class);
-
 
    private Tweets checkIfExist(long id){
       Optional<Tweets>tweets=tweetsRepo.findById(id);
@@ -58,22 +59,31 @@ public class TweetsService {
    }
 
    public void deleteById(long id){
+       Users users=userRepo.findByEmail(SecurityUtils.getCurrentUser()).orElseThrow(
+               ()-> new UsernameNotFoundException("user not found")
+       );
        Tweets tweets=checkIfExist(id);
-       Users users=userRepo.findByEmail(SecurityUtils.getCurrentUser()).orElseThrow();
-
-       deleteByOwnersId(users.getUserId(),id);
+//       deleteByOwnersId(users.getUserId(),id);
+       if (checkOwnerShip(users.getUserId(),id)){
+           tweetsRepo.deleteById(id);
+       }
    }
 
-   private void deleteByOwnersId(long userId,long tweetId){
+   private boolean checkOwnerShip(long userId,long tweetId){
        Tweets tweets=tweetsRepo.findById(tweetId).orElseThrow();
        if (!tweets.getUsers().getUserId().equals(userId)){
            throw new AppException(HttpStatus.FORBIDDEN.value(), "Forbidden");
        }
-
-       tweetsRepo.deleteById(tweetId);
+      return true;
    }
+//   private void deleteByOwnersId(long userId,long tweetId){
+//       Tweets tweets=tweetsRepo.findById(tweetId).orElseThrow();
+//       if (!tweets.getUsers().getUserId().equals(userId)){
+//           throw new AppException(HttpStatus.FORBIDDEN.value(), "Forbidden");
+//       }
+//       tweetsRepo.deleteById(tweetId);
+//   }
 
-   @Transactional
    public TweetsResponse createTweet(Tweets tweets){
        String email=SecurityUtils.getCurrentUser();
        Users users=userRepo.findByEmail(email).orElseThrow();
@@ -81,4 +91,20 @@ public class TweetsService {
        Tweets tweets1=tweetsRepo.save(tweets);
        return createTweetResponse(tweets1);
    }
+
+   public void likeTweet(long tweetsId){
+      Users users=userRepo.findByEmail(SecurityUtils.getCurrentUser()).orElseThrow(
+              ()-> new UsernameNotFoundException("user not found")
+      );
+      Tweets tweets=checkIfExist(tweetsId);
+      if (checkOwnerShip(users.getUserId(),tweetsId)){
+        //like repo
+          // get tweet id
+          // get user id
+          // create entry in like
+
+      }
+
+   }
+
 }
