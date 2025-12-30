@@ -28,7 +28,6 @@ public class TweetsService {
 
     private final TweetsMapper tweetsMapper= Mappers.getMapper(TweetsMapper.class);
     private final UsersMapper mapper= Mappers.getMapper(UsersMapper.class);
-    private final UsersMapper usersMapper;
 
     private Tweets checkIfExist(long id){
         Optional<Tweets>tweets=tweetsRepo.findById(id);
@@ -42,11 +41,10 @@ public class TweetsService {
         return  tweetsMapper.toResponse(tweets);
     }
 
-    public TweetsService(TweetsRepo tweetsRepo, UserRepo userRepo, LikeRepo likeRepo, UsersMapper usersMapper){
+    public TweetsService(TweetsRepo tweetsRepo, UserRepo userRepo, LikeRepo likeRepo){
         this.tweetsRepo=tweetsRepo;
         this.userRepo=userRepo;
         this.likeRepo=likeRepo;
-        this.usersMapper = usersMapper;
     }
     public List<TweetsResponse>findByUserId(long id){
         List<Tweets>tweetsList=tweetsRepo.findByUsersUserId(id);
@@ -75,8 +73,8 @@ public class TweetsService {
         return true;
     }
 
-    //check users
-    public Users checkUser(){
+    //check loggedIn users
+    private Users checkUser(){
         return userRepo.findByEmail(SecurityUtils.getCurrentUser()).orElseThrow(
                 ()-> new UsernameNotFoundException("user not found")
         );

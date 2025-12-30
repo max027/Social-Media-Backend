@@ -26,7 +26,7 @@ public class Follows extends BaseEntity {
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "follower_id",nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Users follower_id;
+    private Users followerId;
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "following_id",nullable = false)

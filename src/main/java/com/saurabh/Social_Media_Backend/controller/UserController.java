@@ -2,7 +2,6 @@ package com.saurabh.Social_Media_Backend.controller;
 
 import com.saurabh.Social_Media_Backend.dto.TweetsResponse;
 import com.saurabh.Social_Media_Backend.dto.UserResponse;
-import com.saurabh.Social_Media_Backend.exception.AppException;
 import com.saurabh.Social_Media_Backend.models.Users;
 import com.saurabh.Social_Media_Backend.service.LikeService;
 import com.saurabh.Social_Media_Backend.service.TweetsService;
@@ -26,11 +25,6 @@ public class UserController {
         this.tweetsService=tweetsService;
         this.likeService=likeService;
     }
-    private void validateId(long id){
-        if (id < 0) {
-            throw new AppException(HttpStatus.BAD_REQUEST.value(), "invalid id: " + id);
-        }
-    }
 
     @GetMapping("/{username}")
     public ResponseEntity<UserResponse> findByUsername(@PathVariable  String username){
@@ -40,34 +34,29 @@ public class UserController {
 
     @GetMapping("/id/{id}")
     public ResponseEntity<UserResponse> findById(@PathVariable long id) throws ResponseStatusException {
-        validateId(id);
         UserResponse users = userService.findById(id);
         return ResponseEntity.ok(users);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> updateById(@PathVariable long id,@RequestBody Users users ){
-        validateId(id);
-        UserResponse updated_user= userService.updateById(id,users);
+    @PutMapping("/")
+    public ResponseEntity<UserResponse> updateById(@RequestBody Users users ){
+        UserResponse updated_user= userService.updateById(users);
         return ResponseEntity.ok(updated_user);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteById(@PathVariable long id){
-        validateId(id);
-       userService.deleteById(id);
+    @DeleteMapping("/")
+    public ResponseEntity<?> deleteById(){
+       userService.deleteById();
        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/id/{id}/tweets")
     public ResponseEntity<List<TweetsResponse>> getTweetsByUserId(@PathVariable  long id){
-        validateId(id);
         return ResponseEntity.ok(tweetsService.findByUserId(id));
     }
 
     @GetMapping("/id/{id}/likes")
     public ResponseEntity<?> getTweetsLikedByUser(@PathVariable long id){
-        validateId(id);
         return ResponseEntity.ok(likeService.findLikedTweetsByUserId(id));
     }
 
@@ -77,4 +66,44 @@ public class UserController {
         return userService.searchUsers(query);
     }
 
+    @PostMapping("/id/{id}/follow")
+    public ResponseEntity<?> followUsers(@PathVariable long id){
+        userService.followUsers(id);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @DeleteMapping("/id/{id}/follow")
+    public ResponseEntity<?> unfollowUsers(@PathVariable long id){
+        userService.unFollowUsers(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/id/{id}/followers")
+    public ResponseEntity<List<UserResponse>> getFollowers(@PathVariable long id){
+        return ResponseEntity.ok(userService.getFollowers(id));
+    }
+
+    @GetMapping("/id/{id}/following")
+    public ResponseEntity<?> getFollowing(@PathVariable long id){
+
+        return ResponseEntity.ok(userService.getFollowing(id));
+    }
+
+    @PostMapping("/id/{id}/block")
+    public ResponseEntity<?> blockUser(@PathVariable long id){
+        userService.blockUser(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/id/{id}/block")
+    public ResponseEntity<?> unBlockUser(@PathVariable long id){
+        userService.unBlockUser(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/block")
+    public ResponseEntity<List<UserResponse>> getBlockList(){
+
+        return ResponseEntity.ok(userService.getBlockedList());
+    }
 }

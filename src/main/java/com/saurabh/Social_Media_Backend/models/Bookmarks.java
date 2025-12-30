@@ -35,7 +35,7 @@ public class Bookmarks {
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "tweets_id",nullable = false)
-    private Tweets tweets_id;
+    private Tweets tweetsId;
 
     @CreatedDate
     @Column(updatable = false,name = "created_at")
