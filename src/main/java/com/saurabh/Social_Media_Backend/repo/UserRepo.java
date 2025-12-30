@@ -20,5 +20,11 @@ public interface UserRepo extends JpaRepository<Users,Long> {
     @Query("SELECT u FROM Users u WHERE u.username LIKE %:query% OR u.email LIKE %:query%")
     List<Users> searchByUsernameOrName(@Param("query") String query);
 
+    @Query("SELECT t.users FROM Tweets t WHERE t.originalTweetId=:tweetId")
+    List<Users> findUsersWhoRetweeted(@Param("tweetId") Tweets tweets);
+
+
+    @Query("SELECT t.users FROM Tweets t WHERE t.quoteTweetId=:tweets")
+    List<Users> findUsersWhoQuoted(@Param("tweets") Tweets tweets);
 
 }

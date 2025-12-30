@@ -70,7 +70,7 @@ public class Tweets extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quoted_tweet_id")
-    private Tweets QuoteTweetId;
+    private Tweets quoteTweetId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "original_tweet_id")

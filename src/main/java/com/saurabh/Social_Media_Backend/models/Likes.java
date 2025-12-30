@@ -39,6 +39,6 @@ public class Likes extends BaseEntity{
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "tweets_id",nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Tweets tweets_id;
+    private Tweets tweets;
 
 }

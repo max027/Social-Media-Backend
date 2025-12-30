@@ -1,5 +1,6 @@
 package com.saurabh.Social_Media_Backend.controller;
 
+import com.saurabh.Social_Media_Backend.dto.UserResponse;
 import com.saurabh.Social_Media_Backend.models.Users;
 import com.saurabh.Social_Media_Backend.repo.LoginUserDto;
 import com.saurabh.Social_Media_Backend.repo.RegisterUserDto;
@@ -27,8 +28,8 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<Users> register(@RequestBody RegisterUserDto registerUserDto){
-        Users registerUser=authService.signup(registerUserDto);
+    public ResponseEntity<UserResponse> register(@RequestBody RegisterUserDto registerUserDto){
+        UserResponse registerUser=authService.signup(registerUserDto);
         return ResponseEntity.ok(registerUser);
     }
 
