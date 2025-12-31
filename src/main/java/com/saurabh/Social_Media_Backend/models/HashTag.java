@@ -12,16 +12,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "hashtag")
-public class HashTag extends BaseEntity{
+public class Hashtag extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "hashtag_id")
     private long hashTagId;
 
     @Column(name = "hashtag_name",nullable = false,unique = true)
-    private String name;
+    private String tag;
 
     @Column(name = "tweet_count")
-    private int tweet_count=0;
+    private int tweetCount=0;
 
 }

@@ -33,7 +33,7 @@ public class Tweet_Hashtag extends BaseEntity{
     @MapsId("hashtagId")
     @JoinColumn(name = "hashtag_id",nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private HashTag hashtagId;
+    private Hashtag hashtagId;
 
 
 }

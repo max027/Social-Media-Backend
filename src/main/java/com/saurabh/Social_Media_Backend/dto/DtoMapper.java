@@ -1,5 +1,6 @@
 package com.saurabh.Social_Media_Backend.dto;
 
+import com.saurabh.Social_Media_Backend.models.Lists;
 import com.saurabh.Social_Media_Backend.models.Tweets;
 import com.saurabh.Social_Media_Backend.models.Users;
 
@@ -45,5 +46,16 @@ public class DtoMapper {
                 users.getFollowingCount()
         );
     };
+    public ListsResponse toListsResponse(Lists lists){
+        return new ListsResponse(
+                lists.getListId(),
+                lists.getUserId(),
+                lists.getListName(),
+                lists.getDescription(),
+                lists.isPrivate(),
+                lists.getMembersCount(),
+                lists.getSubscriberCount()
+        );
+    }
 
 }

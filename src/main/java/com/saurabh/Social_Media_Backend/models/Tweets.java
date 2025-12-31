@@ -1,22 +1,18 @@
 package com.saurabh.Social_Media_Backend.models;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
+import lombok.Setter;
+
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.springframework.data.annotation.CreatedDate;
-
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tweets")
@@ -34,7 +30,6 @@ public class Tweets extends BaseEntity{
     @Column(name = "content")
     private String content;
 
-    //spring.jpa.hibernate.ddl-auto=none
     @OneToMany
     @JoinColumn(name = "media_url")
     @OnDelete(action = OnDeleteAction.CASCADE)

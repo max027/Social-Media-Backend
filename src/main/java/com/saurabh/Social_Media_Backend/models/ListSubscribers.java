@@ -28,12 +28,12 @@ public class ListSubscribers extends BaseEntity{
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Users userId;
+    private Users users;
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "list_id",nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private List listId;
+    private Lists lists;
 
 
     @CreationTimestamp

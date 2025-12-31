@@ -27,12 +27,12 @@ public class ListMembers {
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Users userId;
+    private Users user;
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "list_id",nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private List listId;
+    private Lists lists;
 
     @CreationTimestamp
     @Column(name = "added_at",updatable = false,nullable = false)

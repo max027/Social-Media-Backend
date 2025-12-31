@@ -27,24 +27,17 @@ public class UserService {
     private final FollowsRepo followsRepo;
     private final BlockRepo blockRepo;
     private final DtoMapper mapper=DtoMapper.getDtoMapper();
+    private final getCurrentUserService getCurrentUserService;
 
-    public UserService(UserRepo repo,FollowsRepo followsRepo,BlockRepo blockRepo){
+    public UserService(UserRepo repo,FollowsRepo followsRepo,BlockRepo blockRepo,getCurrentUserService getCurrentUserService){
         this.userRepo =repo;
         this.blockRepo=blockRepo;
         this.followsRepo=followsRepo;
+        this.getCurrentUserService=getCurrentUserService;
     }
 
     private UserResponse createResponse(Users users){
         return mapper.toUserResponse(users);
-    }
-
-
-
-    //check loggedIn users
-    private Users checkUser(){
-        return userRepo.findByEmail(SecurityUtils.getCurrentUser()).orElseThrow(
-                ()-> new UsernameNotFoundException("user not found")
-        );
     }
 
 
@@ -73,14 +66,14 @@ public class UserService {
 
     @Transactional
     public UserResponse updateById(Users users){
-        Users fetch_user= checkUser();
+        Users fetch_user=getCurrentUserService.getCurrentUser();
         users.setUserId(fetch_user.getUserId());
         return createResponse(userRepo.save(users));
     }
 
     @Transactional
     public void deleteById(){
-        Users users= checkUser();
+        Users users= getCurrentUserService.getCurrentUser();
         userRepo.deleteById(users.getUserId());
     }
 
@@ -96,7 +89,7 @@ public class UserService {
     }
 
     public void followUsers(long id){
-        Users followers=checkUser();
+        Users followers=getCurrentUserService.getCurrentUser();
         Users following=getUserById(id);
         Follows follows=new Follows();
         follows.setFollowerId(followers);
@@ -108,7 +101,7 @@ public class UserService {
     }
 
     public void unFollowUsers(long id){
-        Users followers=checkUser();
+        Users followers=getCurrentUserService.getCurrentUser();
         Users following=getUserById(id);
         Follows follows=followsRepo.findFollowsByFollowerIdAndFollowingId(followers,following);
 
@@ -130,7 +123,7 @@ public class UserService {
     }
 
     public void blockUser(long id){
-        Users users=checkUser();
+        Users users=getCurrentUserService.getCurrentUser();
         Users blockedUser=getUserById(id);
 
         Blocked blocked=new Blocked();
@@ -140,7 +133,7 @@ public class UserService {
         blockRepo.save(blocked);
     }
     public void unBlockUser(long id){
-        Users users=checkUser();
+        Users users=getCurrentUserService.getCurrentUser();
         Users blockedUser=getUserById(id);
 
         Blocked blocked=blockRepo.findBlockedByBlockedIdAndBlockerId(blockedUser,users);
@@ -148,7 +141,7 @@ public class UserService {
         blockRepo.delete(blocked);
     }
     public List<UserResponse>getBlockedList(){
-        Users users=checkUser();
+        Users users=getCurrentUserService.getCurrentUser();
         List<Users>list=blockRepo.findUsersBlockedList(users);
         return list.stream().map(mapper::toUserResponse).toList();
     }
