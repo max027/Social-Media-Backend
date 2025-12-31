@@ -1,7 +1,5 @@
 package com.saurabh.Social_Media_Backend.config;
 
-import com.saurabh.Social_Media_Backend.dto.TweetsResponse;
-import com.saurabh.Social_Media_Backend.models.Tweets;
 import com.saurabh.Social_Media_Backend.repo.UserRepo;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

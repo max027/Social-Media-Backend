@@ -1,6 +1,5 @@
 package com.saurabh.Social_Media_Backend.repo;
 
-import com.saurabh.Social_Media_Backend.dto.TweetsResponse;
 import com.saurabh.Social_Media_Backend.models.Tweets;
 import com.saurabh.Social_Media_Backend.models.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
