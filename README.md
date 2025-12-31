@@ -21,7 +21,7 @@ This project provides APIs for user authentication, posts, likes, comments, and 
 
 ## 🛠 Tech Stack
 
-- **Java 17+**
+- **Java 21+**
 - **Spring Boot**
 - **Spring Security + JWT**
 - **Spring Data JPA (Hibernate)**

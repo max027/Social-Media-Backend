@@ -1,7 +1,7 @@
 package com.saurabh.Social_Media_Backend.service;
 
+import com.saurabh.Social_Media_Backend.dto.DtoMapper;
 import com.saurabh.Social_Media_Backend.dto.UserResponse;
-import com.saurabh.Social_Media_Backend.dto.UsersMapper;
 import com.saurabh.Social_Media_Backend.exception.AppException;
 import com.saurabh.Social_Media_Backend.models.Blocked;
 import com.saurabh.Social_Media_Backend.models.Follows;
@@ -10,7 +10,6 @@ import com.saurabh.Social_Media_Backend.repo.BlockRepo;
 import com.saurabh.Social_Media_Backend.repo.FollowsRepo;
 import com.saurabh.Social_Media_Backend.repo.UserRepo;
 import com.saurabh.Social_Media_Backend.utils.SecurityUtils;
-import org.mapstruct.factory.Mappers;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,7 @@ public class UserService {
     private final UserRepo userRepo;
     private final FollowsRepo followsRepo;
     private final BlockRepo blockRepo;
-    private final UsersMapper mapper= Mappers.getMapper(UsersMapper.class);
+    private final DtoMapper mapper=DtoMapper.getDtoMapper();
 
     public UserService(UserRepo repo,FollowsRepo followsRepo,BlockRepo blockRepo){
         this.userRepo =repo;

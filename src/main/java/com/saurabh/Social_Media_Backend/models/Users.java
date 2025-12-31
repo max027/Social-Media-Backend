@@ -18,7 +18,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-//@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "users")
 public class Users extends BaseEntity implements UserDetails {
     @Id
@@ -59,9 +58,9 @@ public class Users extends BaseEntity implements UserDetails {
     @Column(name = "following_count")
     private int followingCount;
 
-    @ColumnDefault("0")
-    @Column(name = "tweets_count")
-    private int tweetsCount;
+//    @ColumnDefault("0")
+//    @Column(name = "tweets_count")
+//    private int tweetsCount;
 
     @LastModifiedDate
     @Column(name = "updated_at")

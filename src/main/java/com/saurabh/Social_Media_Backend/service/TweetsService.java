@@ -1,6 +1,5 @@
 package com.saurabh.Social_Media_Backend.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +12,6 @@ import com.saurabh.Social_Media_Backend.repo.LikeRepo;
 import com.saurabh.Social_Media_Backend.repo.TweetsRepo;
 import com.saurabh.Social_Media_Backend.repo.UserRepo;
 import com.saurabh.Social_Media_Backend.utils.SecurityUtils;
-import org.mapstruct.factory.Mappers;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -26,8 +24,7 @@ public class TweetsService {
    private final UserRepo userRepo;
    private final LikeRepo likeRepo;
 
-    private final TweetsMapper tweetsMapper= Mappers.getMapper(TweetsMapper.class);
-    private final UsersMapper mapper= Mappers.getMapper(UsersMapper.class);
+    private final DtoMapper mapper=DtoMapper.getDtoMapper();
 
     private Tweets checkIfExist(long id){
         Optional<Tweets>tweets=tweetsRepo.findById(id);
@@ -38,7 +35,7 @@ public class TweetsService {
     }
 
     private TweetsResponse createTweetResponse(Tweets tweets){
-        return  tweetsMapper.toResponse(tweets);
+        return  mapper.toTweetsResponse(tweets);
     }
 
     public TweetsService(TweetsRepo tweetsRepo, UserRepo userRepo, LikeRepo likeRepo){
@@ -48,7 +45,7 @@ public class TweetsService {
     }
     public List<TweetsResponse>findByUserId(long id){
         List<Tweets>tweetsList=tweetsRepo.findByUsersUserId(id);
-        return tweetsList.stream().map(tweetsMapper::toResponse).toList();
+        return tweetsList.stream().map(mapper::toTweetsResponse).toList();
     }
     public TweetsResponse findByTweetId(long id){
         Tweets tweets=checkIfExist(id);
@@ -189,7 +186,7 @@ public class TweetsService {
         tweetsRepo.deleteById(quote.getTweetsId());
     }
 
-    public int reply(long id, ReplyRequest content){
+    public int reply(long id, ReplyRequest ReplyContent){
         Tweets tweets=checkIfExist(id);
         Users users=checkUser();
 
@@ -206,7 +203,7 @@ public class TweetsService {
         reply.setReplyToTweet(tweets);
 
         // set content
-        reply.setContent(content.getContent());
+        reply.setContent(ReplyContent.content());
 
         //set users
         reply.setReplyToUserId(tweets.getUsers());

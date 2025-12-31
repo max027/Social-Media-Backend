@@ -56,10 +56,7 @@ public class BookmarkService {
         bookmarks.setTweetsId(tweets);
         bookmarkRepo.save(bookmarks);
 
-        BookmarkResponse response=new BookmarkResponse();
-        response.setTweetsId(tweets.getTweetsId());
-        response.setUserId(users.getUserId());
-        return response;
+        return new BookmarkResponse(tweets.getUsers().getUserId(), tweets.getTweetsId());
     }
 
     public void deleteBookmark(long id){
@@ -78,9 +75,10 @@ public class BookmarkService {
        List<BookmarkResponse>responses=new ArrayList<>();
 
        for (Bookmarks bookmarks:bookmarksList){
-           BookmarkResponse r=new BookmarkResponse();
-           r.setUserId(bookmarks.getUsers().getUserId());
-           r.setTweetsId(bookmarks.getTweetsId().getTweetsId());
+           BookmarkResponse r=new BookmarkResponse(
+                   bookmarks.getUsers().getUserId(),
+                   bookmarks.getTweetsId().getTweetsId()
+           );
            responses.add(r);
        }
        return responses;
