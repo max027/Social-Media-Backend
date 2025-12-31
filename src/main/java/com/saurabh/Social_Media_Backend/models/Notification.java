@@ -1,5 +1,6 @@
 package com.saurabh.Social_Media_Backend.models;
 
+import com.saurabh.Social_Media_Backend.dto.NotificationType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,15 +18,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Table(name = "notifications")
 public class Notification extends BaseEntity{
-    private enum NotificationType{
-        LIKE,
-        FOLLOW,
-        RETWEET,
-        QUOTE,
-        REPLY,
-        MENTION
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "notification_id")
@@ -35,18 +27,18 @@ public class Notification extends BaseEntity{
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Users userId;
+    private Users users;
 
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "actor_id",nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Users Actor_id;
+    private Users Actors;
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "tweet_id",nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Tweets tweetId;
+    private Tweets tweets;
 
     @Column(name = "is_read")
     private boolean isRead=false;

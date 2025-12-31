@@ -1,6 +1,7 @@
 package com.saurabh.Social_Media_Backend.dto;
 
 import com.saurabh.Social_Media_Backend.models.Lists;
+import com.saurabh.Social_Media_Backend.models.Notification;
 import com.saurabh.Social_Media_Backend.models.Tweets;
 import com.saurabh.Social_Media_Backend.models.Users;
 
@@ -56,6 +57,15 @@ public class DtoMapper {
                 lists.getMembersCount(),
                 lists.getSubscriberCount()
         );
+    }
+    public NotificationResponse toNotificationResponse(Notification notification){
+        NotificationResponse response=new NotificationResponse();
+        response.setRead(notification.isRead());
+        response.setActorId(notification.getActors().getUserId());
+        response.setTweetId(notification.getTweets().getTweetsId());
+        response.setUserId(notification.getUsers().getUserId());
+        response.setNotificationType(notification.getNotificationType());
+        return response;
     }
 
 }

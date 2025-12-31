@@ -7,24 +7,15 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.saurabh.Social_Media_Backend.dto.*;
+import com.saurabh.Social_Media_Backend.models.*;
+import com.saurabh.Social_Media_Backend.repo.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.saurabh.Social_Media_Backend.dto.DtoMapper;
-import com.saurabh.Social_Media_Backend.dto.ReplyRequest;
-import com.saurabh.Social_Media_Backend.dto.TweetsResponse;
-import com.saurabh.Social_Media_Backend.dto.UserResponse;
 import com.saurabh.Social_Media_Backend.exception.AppException;
-import com.saurabh.Social_Media_Backend.models.Hashtag;
-import com.saurabh.Social_Media_Backend.models.Likes;
-import com.saurabh.Social_Media_Backend.models.Tweets;
-import com.saurabh.Social_Media_Backend.models.Users;
-import com.saurabh.Social_Media_Backend.repo.HashtagRepo;
-import com.saurabh.Social_Media_Backend.repo.LikeRepo;
-import com.saurabh.Social_Media_Backend.repo.TweetsRepo;
-import com.saurabh.Social_Media_Backend.repo.UserRepo;
 import com.saurabh.Social_Media_Backend.utils.SecurityUtils;
 
 @Service
@@ -34,9 +25,10 @@ public class TweetsService {
     private final UserRepo userRepo;
     private final LikeRepo likeRepo;
     private final HashtagRepo hashtagRepo;
-    private static final Pattern hashtagPattern=Pattern.compile("#([a-zA-Z0-9_]+)");
     private final getCurrentUserService getCurrentUserService;
     private final DtoMapper mapper=DtoMapper.getDtoMapper();
+    private final MentionsRepo mentionsRepo;
+    private final NotificatioinsRepo notificatioinsRepo;
 
     private Tweets checkIfExist(long id){
         Optional<Tweets>tweets=tweetsRepo.findById(id);
@@ -50,12 +42,14 @@ public class TweetsService {
         return  mapper.toTweetsResponse(tweets);
     }
 
-    public TweetsService(TweetsRepo tweetsRepo, UserRepo userRepo, LikeRepo likeRepo,HashtagRepo hashtagRepo,getCurrentUserService getCurrentUserService){
+    public TweetsService(TweetsRepo tweetsRepo, UserRepo userRepo, LikeRepo likeRepo, HashtagRepo hashtagRepo, getCurrentUserService getCurrentUserService, MentionsRepo mentionsRepo, NotificatioinsRepo notificatioinsRepo){
         this.tweetsRepo=tweetsRepo;
         this.userRepo=userRepo;
         this.likeRepo=likeRepo;
         this.hashtagRepo=hashtagRepo;
         this.getCurrentUserService=getCurrentUserService;
+        this.mentionsRepo = mentionsRepo;
+        this.notificatioinsRepo = notificatioinsRepo;
     }
     public List<TweetsResponse>findByUserId(long id){
         List<Tweets>tweetsList=tweetsRepo.findByUsersUserId(id);
@@ -66,6 +60,13 @@ public class TweetsService {
         return createTweetResponse(tweets);
     }
 
+    private void sendNofication(NotificationType type,Users users,Users actors,Tweets tweets){
+        Notification notification=new Notification();
+        notification.setUsers(users);
+        notification.setActors(actors);
+        notification.setTweets(tweets);
+        notificatioinsRepo.save(notification);
+    }
     public void deleteById(long id){
         Users users=getCurrentUserService.getCurrentUser();
         checkIfExist(id);
@@ -82,6 +83,9 @@ public class TweetsService {
         tweets.setUsers(users);
         //check hashtag if contain
         Set<String>hashtag=extractHashtag(tweets.getContent());
+
+        //save tweet first
+        Tweets tweets1=tweetsRepo.save(tweets);
 
         //save hashtag
         if (!hashtag.isEmpty()){
@@ -100,11 +104,33 @@ public class TweetsService {
 
         }
 
-        Tweets tweets1=tweetsRepo.save(tweets);
+        Set<String> mentions=extractMentions(tweets.getContent());
+        //save mentions
+        if (!mentions.isEmpty()){
+            for (String user:mentions){
+               Users users1=userRepo.findByUsername(user);
+               Mentions mentions1=new Mentions();
+               mentions1.setUsers(users1);
+               mentions1.setTweets(tweets);
+
+               mentionsRepo.save(mentions1);
+            }
+        }
         return createTweetResponse(tweets1);
+    }
+    private Set<String> extractMentions(String content){
+        Pattern mentionsPattern=Pattern.compile("(?<![a-zA-Z0-9_])@([a-zA-Z0-9_]{1,15})");
+        Matcher matcher=mentionsPattern.matcher(content);
+
+        Set<String>mentions=new HashSet<>();
+        while (matcher.find()){
+            mentions.add(matcher.group(1).toLowerCase());
+        }
+        return mentions;
     }
 
     private Set<String>extractHashtag(String content) {
+        Pattern hashtagPattern=Pattern.compile("@([a-zA-Z0-9_]+)");
         Matcher matcher=hashtagPattern.matcher(content);
         Set<String>hashtag=new HashSet<>();
         while (matcher.find()) {
@@ -124,6 +150,8 @@ public class TweetsService {
 
         // inc like count
         tweets.setLikeCount(tweets.getLikeCount() + 1);
+
+        sendNofication(NotificationType.LIKE,users,tweets.getUsers(),tweets);
 
         return tweets.getLikeCount();
     }
@@ -160,7 +188,7 @@ public class TweetsService {
 
         // save
         tweetsRepo.save(retweet);
-
+        sendNofication(NotificationType.RETWEET,users,tweets.getUsers(),tweets);
         return tweets.getRetweetCount();
     }
 
@@ -194,6 +222,7 @@ public class TweetsService {
         // save
         tweetsRepo.save(quote);
 
+        sendNofication(NotificationType.QUOTE,users,tweets.getUsers(),tweets);
         return tweets.getQuoteCount();
     }
 
@@ -234,6 +263,8 @@ public class TweetsService {
         reply.setReplyToUserId(tweets.getUsers());
 
         tweetsRepo.save(reply);
+
+        sendNofication(NotificationType.REPLY,users,tweets.getUsers(),tweets);
 
         return tweets.getReplyCount();
     }

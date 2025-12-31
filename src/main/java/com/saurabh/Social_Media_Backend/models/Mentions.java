@@ -11,6 +11,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+//change table name
 @Table(name = "mentioins",
         uniqueConstraints = {
                 @UniqueConstraint(name = "unique_mention",columnNames = {
@@ -26,12 +27,12 @@ public class Mentions extends BaseEntity {
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "tweets_id",nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Tweets tweets_id;
+    private Tweets tweets;
 
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Users userId;
+    private Users users;
 
 }
