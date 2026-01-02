@@ -83,7 +83,7 @@ public class ListController {
     }
 
     @GetMapping("/id/{id}/subscribers")
-    public ResponseEntity<List<ListsResponse>> getSubscribers(@PathVariable long id){
+    public ResponseEntity<List<UserResponse>> getSubscribers(@PathVariable long id){
 
         return ResponseEntity.ok(listsService.getSubscribers(id));
     }

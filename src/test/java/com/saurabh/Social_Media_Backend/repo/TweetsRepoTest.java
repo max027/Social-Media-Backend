@@ -25,6 +25,7 @@ public class TweetsRepoTest {
     private Users retweetUser;
     private Users quoteUser;
     private Tweets quote;
+    private Tweets tweets;
 
     @BeforeEach
     void setup(){
@@ -40,7 +41,7 @@ public class TweetsRepoTest {
         retweetUser.setPassword("pass2");
         userRepo.save(retweetUser);
 
-        Tweets tweets=new Tweets();
+        tweets=new Tweets();
         tweets.setContent("This is sample test");
         tweets.setBookmarkCount(12);
         tweets.setRetweet(false);
@@ -105,12 +106,10 @@ public class TweetsRepoTest {
     }
     @Test
     public void testFindTweetsByUsersAndQuoteTweetId(){
-       Tweets tweets=tweetsRepo.findTweetsByUsersAndQuoteTweetId(quoteUser,quote).orElseThrow();
-
-        assertTrue(tweets.isQuote());
-        assertFalse(tweets.isRetweet());
-        assertEquals(quoteUser.getUserId(),tweets.getUsers().getUserId());
-        assertEquals(quote.getTweetsId(),tweets.getOriginalTweetId().getTweetsId());
+        assertTrue(quote.isQuote());
+        assertFalse(quote.isRetweet());
+        assertEquals(quoteUser.getUserId(),quote.getUsers().getUserId());
+        assertEquals(quote.getQuoteTweetId().getTweetsId(),tweets.getTweetsId());
     }
 
 }

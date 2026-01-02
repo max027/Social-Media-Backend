@@ -1,0 +1,85 @@
+package com.saurabh.Social_Media_Backend.repo;
+
+import com.saurabh.Social_Media_Backend.models.ListMembers;
+import com.saurabh.Social_Media_Backend.models.Lists;
+import com.saurabh.Social_Media_Backend.models.Users;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@DataJpaTest
+public class ListRepoTest {
+    @Autowired
+    private ListsRepo listsRepo;
+
+    @Autowired
+    private UserRepo userRepo;
+    @Autowired
+    private ListMembersRepo listMembersRepo;
+
+
+    @BeforeEach
+    void setup() {
+        Users users1 = new Users();
+        users1.setEmail("example1@example.com");
+        users1.setUsername("user1");
+        users1.setPassword("pass1");
+        userRepo.save(users1);
+
+        Users users2= new Users();
+        users2.setEmail("example2@example.com");
+        users2.setUsername("user2");
+        users2.setPassword("pass2");
+        userRepo.save(users2);
+
+        Lists lists=new Lists();
+        lists.setListName("sample list");
+        lists.setPrivate(false);
+        lists.setDescription("this is private list");
+        lists.setMembersCount(1);
+        lists.setUserId(users1);
+        lists.setSubscriberCount(1);
+        listsRepo.save(lists);
+
+        ListMembers members=new ListMembers();
+        members.setLists(lists);
+        members.setUser(users2);
+        listMembersRepo.save(members);
+
+        ListMembers members2=new ListMembers();
+        members2.setLists(lists);
+        members2.setUser(users1);
+        listMembersRepo.save(members2);
+
+    }
+
+    @Test
+    public void testFindListByUserId(){
+        Users users=userRepo.findByEmail("example1@example.com").orElseThrow();
+        List<Lists> lists=listsRepo.findListsByUserId(users);
+        assertFalse(lists.isEmpty());
+        assertEquals(1,lists.size());
+        assertEquals(users.getUserId(),lists.getFirst().getUserId().getUserId());
+
+        Users users2=userRepo.findByEmail("example2@example.com").orElseThrow();
+        List<Lists> lists2=listsRepo.findListsByUserId(users2);
+        assertTrue(lists2.isEmpty());
+
+    }
+    @Test
+    public void findMembersOfList(){
+        Users users=userRepo.findByEmail("example1@example.com").orElseThrow();
+        List<Lists> lists=listsRepo.findListsByUserId(users);
+        List<Users>members=listsRepo.findMembersOfList(lists.getFirst());
+
+        assertFalse(members.isEmpty());
+        assertEquals(2,members.size());
+
+    }
+
+}

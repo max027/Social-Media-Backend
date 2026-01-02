@@ -20,5 +20,5 @@ public interface ListsSubscriberRepo extends CrudRepository<ListSubscribers,Long
         JOIN  ListSubscribers  ls ON ls.users.userId=u.userId
         WHERE ls.lists=:lists
        """)
-    List<Lists> findSubscribers(@Param("lists") Lists lists);
+    List<Users> findSubscribers(@Param("lists") Lists lists);
 }

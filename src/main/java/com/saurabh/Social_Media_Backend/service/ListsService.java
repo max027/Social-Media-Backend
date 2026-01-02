@@ -168,9 +168,9 @@ public class ListsService {
     }
 
     // subscriber
-    public List<ListsResponse>getSubscribers(long id){
+    public List<UserResponse>getSubscribers(long id){
         Lists lists=checkId(id);
-        List<Lists>subscribers=listsSubscriberRepo.findSubscribers(lists);
-        return subscribers.stream().map(mapper::toListsResponse).toList();
+        List<Users>subscribers=listsSubscriberRepo.findSubscribers(lists);
+        return subscribers.stream().map(mapper::toUserResponse).toList();
     }
 }

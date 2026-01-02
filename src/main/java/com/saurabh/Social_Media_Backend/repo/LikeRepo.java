@@ -15,7 +15,7 @@ import java.util.Optional;
 public interface LikeRepo extends JpaRepository<Likes,Long> {
 
     @Query("""
-    SELECT l.tweets.tweetsId
+    SELECT l.tweets
     FROM Likes l
     WHERE l.users.userId = :userId
 """)

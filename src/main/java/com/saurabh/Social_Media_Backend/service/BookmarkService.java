@@ -63,7 +63,9 @@ public class BookmarkService {
         Tweets tweets=checkIfExist(id);
         Users users=checkUser();
 
-        Bookmarks bookmarks=bookmarkRepo.findBookmarksByUsersAndTweetsId(users,tweets);
+        Bookmarks bookmarks=bookmarkRepo.findBookmarksByUsersAndTweetsId(users,tweets).orElseThrow(
+                ()->new AppException(HttpStatus.NOT_FOUND.value(), "user does not have bookmark")
+        );
 
         tweets.setBookmarkCount(tweets.getBookmarkCount()-1);
         bookmarkRepo.deleteById(bookmarks.getBookmarkId());

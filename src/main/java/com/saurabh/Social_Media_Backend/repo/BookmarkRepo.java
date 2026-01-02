@@ -7,10 +7,11 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BookmarkRepo extends CrudRepository<Bookmarks,Long> {
-    Bookmarks findBookmarksByUsersAndTweetsId(Users users, Tweets tweetsId);
+    Optional<Bookmarks> findBookmarksByUsersAndTweetsId(Users users, Tweets tweetsId);
 
     List<Bookmarks> findBookmarksByUsers(Users users);
 }

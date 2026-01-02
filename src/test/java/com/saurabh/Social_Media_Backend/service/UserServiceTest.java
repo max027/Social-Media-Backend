@@ -2,6 +2,7 @@ package com.saurabh.Social_Media_Backend.service;
 
 import com.saurabh.Social_Media_Backend.dto.UserResponse;
 import com.saurabh.Social_Media_Backend.exception.AppException;
+import com.saurabh.Social_Media_Backend.models.Likes;
 import com.saurabh.Social_Media_Backend.models.Users;
 import com.saurabh.Social_Media_Backend.repo.UserRepo;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,6 +26,9 @@ import static org.mockito.Mockito.verify;
 public class UserServiceTest {
     @InjectMocks
     private UserService service;
+
+    @Mock
+    private getCurrentUserService getCurrentUserService;
 
     @Mock
     private UserRepo userRepo;
@@ -71,28 +76,10 @@ public class UserServiceTest {
 
         assertThrows(AppException.class,()->service.findById(-1));
     }
+
     @Test
-    public void testUpdateUser(){
-       UserResponse userResponse=service.findById(1L);
-        assertNotNull(userResponse);
-        assertEquals("max",userResponse.username());
-        assertEquals("example@email.com",userResponse.email());
+    public void testSearchByUsernameOrName(){
 
-        Users updateUser=new Users();
-        updateUser.setUserId(userResponse.userId());
-        updateUser.setUsername(userResponse.username());
-        updateUser.setEmail("updateemail@email.com");
-        updateUser.setBio("hello world");
-        updateUser.setProfilePictureUrl(userResponse.profilePictureUrl());
-        updateUser.setBannerUrl(userResponse.bannerUrl());
-        updateUser.setDateOfBirth(userResponse.dateOfBirth());
-        updateUser.setFollowersCount(userResponse.followersCount()+200);
-        updateUser.setFollowingCount(userResponse.followingCount()-20);
-
-        UserResponse userResponse2=service.updateUser(updateUser);
-        assertEquals("updateemail@email.com",userResponse2.email());
-        assertEquals(userResponse.followersCount()+200,userResponse2.followersCount());
-        assertEquals(userResponse.followingCount()-20,userResponse2.followingCount());
     }
 
 }

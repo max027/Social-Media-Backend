@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -44,7 +45,7 @@ public class UserRepoTest {
         Users users=new Users();
         users.setUsername("sample");
         users.setPassword("pass");
-        users.setEmail("example1@example.com");
+        users.setEmail("example10@example.com");
 
         Users saved=userRepo.save(users);
 
@@ -84,6 +85,15 @@ public class UserRepoTest {
         assertEquals("example1@example.com",users.getEmail());
         assertEquals("user1",users.getUsername());
 
-        assertNull(userRepo.findByUsername("sam"));
+        Optional<Users>users1=userRepo.findByUsername("max");
+        assertTrue(users1.isEmpty());
+    }
+
+    @Test
+    public void testFindByUsernameOrName(){
+        List<Users>list=userRepo.searchByUsernameOrName("exa");
+        assertFalse(list.isEmpty());
+        assertEquals(3,list.size());
     }
 }
+
