@@ -25,6 +25,7 @@ public class Tweets extends BaseEntity{
 
     @ManyToOne
     @JoinColumn(name = "user_id",nullable = false)
+    @OnDelete(action=OnDeleteAction.CASCADE)
     private Users users;
 
     @Column(name = "content")
@@ -67,6 +68,7 @@ public class Tweets extends BaseEntity{
     @JoinColumn(name = "quoted_tweet_id")
     private Tweets quoteTweetId;
 
+    //for retweets
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "original_tweet_id")
     @OnDelete(action = OnDeleteAction.CASCADE)

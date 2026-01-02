@@ -3,15 +3,9 @@ package com.saurabh.Social_Media_Backend.service;
 import com.saurabh.Social_Media_Backend.dto.DtoMapper;
 import com.saurabh.Social_Media_Backend.dto.UserResponse;
 import com.saurabh.Social_Media_Backend.exception.AppException;
-import com.saurabh.Social_Media_Backend.models.Blocked;
-import com.saurabh.Social_Media_Backend.models.Follows;
-import com.saurabh.Social_Media_Backend.models.Users;
-import com.saurabh.Social_Media_Backend.repo.BlockRepo;
-import com.saurabh.Social_Media_Backend.repo.FollowsRepo;
-import com.saurabh.Social_Media_Backend.repo.UserRepo;
-import com.saurabh.Social_Media_Backend.utils.SecurityUtils;
+import com.saurabh.Social_Media_Backend.models.*;
+import com.saurabh.Social_Media_Backend.repo.*;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,12 +22,20 @@ public class UserService {
     private final BlockRepo blockRepo;
     private final DtoMapper mapper=DtoMapper.getDtoMapper();
     private final getCurrentUserService getCurrentUserService;
+    private final checkBlockedService checkBlockedService;
+    private final TweetsRepo tweetsRepo;
+    private final LikeRepo likeRepo;
+    private final TweetsService tweetsService;
 
-    public UserService(UserRepo repo,FollowsRepo followsRepo,BlockRepo blockRepo,getCurrentUserService getCurrentUserService){
+    public UserService(UserRepo repo, FollowsRepo followsRepo, BlockRepo blockRepo, getCurrentUserService getCurrentUserService, checkBlockedService checkBlockedService, TweetsRepo tweetsRepo, LikeRepo likeRepo, TweetsService tweetsService){
         this.userRepo =repo;
         this.blockRepo=blockRepo;
         this.followsRepo=followsRepo;
         this.getCurrentUserService=getCurrentUserService;
+        this.checkBlockedService = checkBlockedService;
+        this.tweetsRepo = tweetsRepo;
+        this.likeRepo = likeRepo;
+        this.tweetsService = tweetsService;
     }
 
     private UserResponse createResponse(Users users){
@@ -52,7 +54,9 @@ public class UserService {
 
 
     public UserResponse findByUsername(String username){
-        Users users= userRepo.findByUsername(username);
+        Users users= userRepo.findByUsername(username).orElseThrow(
+                ()->new AppException(HttpStatus.NOT_FOUND.value(), "user not found")
+        );
         if (users==null){
             throw new AppException(HttpStatus.NOT_FOUND.value(), "user with username:"+username+" not found");
         }
@@ -65,14 +69,14 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse updateById(Users users){
+    public UserResponse updateUser(Users users){
         Users fetch_user=getCurrentUserService.getCurrentUser();
         users.setUserId(fetch_user.getUserId());
         return createResponse(userRepo.save(users));
     }
 
     @Transactional
-    public void deleteById(){
+    public void deleteUser(){
         Users users= getCurrentUserService.getCurrentUser();
         userRepo.deleteById(users.getUserId());
     }
@@ -91,6 +95,14 @@ public class UserService {
     public void followUsers(long id){
         Users followers=getCurrentUserService.getCurrentUser();
         Users following=getUserById(id);
+
+        //if the user that you are following has blocked you cannot follow
+        Optional<Blocked>blocked=blockRepo.findBlockedByBlockedIdAndBlockerId(followers,following);
+
+        blocked.ifPresent(value->{
+            throw  new AppException(HttpStatus.FORBIDDEN.value(), "user has blocked you");
+        });
+
         Follows follows=new Follows();
         follows.setFollowerId(followers);
         follows.setFollowingId(following);
@@ -103,7 +115,9 @@ public class UserService {
     public void unFollowUsers(long id){
         Users followers=getCurrentUserService.getCurrentUser();
         Users following=getUserById(id);
-        Follows follows=followsRepo.findFollowsByFollowerIdAndFollowingId(followers,following);
+        Follows follows=followsRepo.findFollowsByFollowerIdAndFollowingId(followers,following).orElseThrow(
+                ()->new AppException(HttpStatus.NOT_FOUND.value(), "user do not follow:"+id)
+        );
 
         following.setFollowersCount(followers.getFollowersCount()-1);
 
@@ -126,6 +140,26 @@ public class UserService {
         Users users=getCurrentUserService.getCurrentUser();
         Users blockedUser=getUserById(id);
 
+        //check if users follow blockedUser and vise versa and unfollow
+        Optional<Follows> userFollowBlocked=followsRepo.findFollowsByFollowerIdAndFollowingId(users,blockedUser);
+        Optional<Follows> blockedFollowUser=followsRepo.findFollowsByFollowerIdAndFollowingId(blockedUser,users);
+
+        if (userFollowBlocked.isPresent() || blockedFollowUser.isPresent()){
+            followsRepo.deleteMutualFollows(users,blockedUser);
+        }
+
+        //if user liked blocked user tweets unlike them
+        List<Tweets> likedBlockedTweets=tweetsRepo.findByUsersUserId(blockedUser.getUserId());
+        for(Tweets tweets:likedBlockedTweets){
+            Optional<Likes>likes=likeRepo.findLikesByTweetsAndUsers(tweets,blockedUser);
+            if (likes.isPresent()){
+                tweetsService.unlikeTweet(tweets.getTweetsId());
+            }
+        }
+        //if user retweet blocked user tweet undo them
+
+
+
         Blocked blocked=new Blocked();
         blocked.setBlockedId(blockedUser);
         blocked.setBlockerId(users);
@@ -136,7 +170,9 @@ public class UserService {
         Users users=getCurrentUserService.getCurrentUser();
         Users blockedUser=getUserById(id);
 
-        Blocked blocked=blockRepo.findBlockedByBlockedIdAndBlockerId(blockedUser,users);
+        Blocked blocked=blockRepo.findBlockedByBlockedIdAndBlockerId(blockedUser,users).orElseThrow(
+                ()->new AppException(HttpStatus.NOT_FOUND.value(), "not found")
+        );
 
         blockRepo.delete(blocked);
     }

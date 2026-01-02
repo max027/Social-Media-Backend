@@ -23,6 +23,14 @@ public interface LikeRepo extends JpaRepository<Likes,Long> {
 
     Optional<Likes> findLikesByTweetsAndUsers(Tweets tweets, Users users);
 
-    @Query("SELECT l.users FROM Likes  l WHERE l.tweets.tweetsId=:tweetId")
+    @Query("""
+    SELECT l.users FROM Likes  l
+    WHERE l.tweets.tweetsId=:tweetId
+    AND NOT EXISTS (
+        SELECT 1 FROM Blocked b
+        WHERE (b.blockerId=l.tweets.users AND b.blockedId=l.users)
+        OR (b.blockerId=l.users AND b.blockedId=l.tweets.users)
+    )
+    """)
     List<Users> findUsersWhoLikedTweet(@Param("tweetId") long tweets);
 }

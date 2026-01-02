@@ -2,8 +2,8 @@ package com.saurabh.Social_Media_Backend.controller;
 
 import com.saurabh.Social_Media_Backend.dto.UserResponse;
 import com.saurabh.Social_Media_Backend.models.Users;
-import com.saurabh.Social_Media_Backend.repo.LoginUserDto;
-import com.saurabh.Social_Media_Backend.repo.RegisterUserDto;
+import com.saurabh.Social_Media_Backend.dto.LoginUserDto;
+import com.saurabh.Social_Media_Backend.dto.RegisterUserDto;
 import com.saurabh.Social_Media_Backend.service.AuthService;
 import com.saurabh.Social_Media_Backend.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;

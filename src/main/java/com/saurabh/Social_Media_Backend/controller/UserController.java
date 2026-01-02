@@ -40,13 +40,13 @@ public class UserController {
 
     @PutMapping("/")
     public ResponseEntity<UserResponse> updateById(@RequestBody Users users ){
-        UserResponse updated_user= userService.updateById(users);
+        UserResponse updated_user= userService.updateUser(users);
         return ResponseEntity.ok(updated_user);
     }
 
     @DeleteMapping("/")
     public ResponseEntity<?> deleteById(){
-       userService.deleteById();
+       userService.deleteUser();
        return ResponseEntity.noContent().build();
     }
 

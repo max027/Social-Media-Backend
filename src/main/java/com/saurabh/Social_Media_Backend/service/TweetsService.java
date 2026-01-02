@@ -29,6 +29,7 @@ public class TweetsService {
     private final DtoMapper mapper=DtoMapper.getDtoMapper();
     private final MentionsRepo mentionsRepo;
     private final NotificatioinsRepo notificatioinsRepo;
+    private final BlockRepo blockRepo;
 
     private Tweets checkIfExist(long id){
         Optional<Tweets>tweets=tweetsRepo.findById(id);
@@ -42,7 +43,7 @@ public class TweetsService {
         return  mapper.toTweetsResponse(tweets);
     }
 
-    public TweetsService(TweetsRepo tweetsRepo, UserRepo userRepo, LikeRepo likeRepo, HashtagRepo hashtagRepo, getCurrentUserService getCurrentUserService, MentionsRepo mentionsRepo, NotificatioinsRepo notificatioinsRepo){
+    public TweetsService(TweetsRepo tweetsRepo, UserRepo userRepo, LikeRepo likeRepo, HashtagRepo hashtagRepo, getCurrentUserService getCurrentUserService, MentionsRepo mentionsRepo, NotificatioinsRepo notificatioinsRepo, BlockRepo blockRepo){
         this.tweetsRepo=tweetsRepo;
         this.userRepo=userRepo;
         this.likeRepo=likeRepo;
@@ -50,6 +51,7 @@ public class TweetsService {
         this.getCurrentUserService=getCurrentUserService;
         this.mentionsRepo = mentionsRepo;
         this.notificatioinsRepo = notificatioinsRepo;
+        this.blockRepo = blockRepo;
     }
     public List<TweetsResponse>findByUserId(long id){
         List<Tweets>tweetsList=tweetsRepo.findByUsersUserId(id);
@@ -61,6 +63,12 @@ public class TweetsService {
     }
 
     private void sendNofication(NotificationType type,Users users,Users actors,Tweets tweets){
+
+        //do not notify if blocked
+        if (checkBlockMutual(users,actors)){
+            return;
+        }
+
         Notification notification=new Notification();
         notification.setUsers(users);
         notification.setActors(actors);
@@ -108,7 +116,9 @@ public class TweetsService {
         //save mentions
         if (!mentions.isEmpty()){
             for (String user:mentions){
-               Users users1=userRepo.findByUsername(user);
+               Users users1=userRepo.findByUsername(user).orElseThrow(
+                       ()->new AppException(HttpStatus.NOT_FOUND.value(), "user not found id:"+users.getUserId())
+               );
                Mentions mentions1=new Mentions();
                mentions1.setUsers(users1);
                mentions1.setTweets(tweets);
@@ -142,6 +152,13 @@ public class TweetsService {
     public int likeTweet(long tweetsId) {
         Users users =getCurrentUserService.getCurrentUser();
         Tweets tweets = checkIfExist(tweetsId);
+
+        //check if tweet's user has blocked you
+        Users tweetUser=userRepo.findById(tweets.getUsers().getUserId()).orElseThrow();
+        if (checkBlockMutual(users,tweetUser)){
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "user has blocked you");
+        }
+
         // like
         Likes likes = new Likes();
         likes.setTweets(tweets);
@@ -173,10 +190,24 @@ public class TweetsService {
         tweets.setLikeCount(tweets.getLikeCount() - 1);
     }
 
+    private boolean checkBlockMutual(Users users,Users tweetsUser){
+        Optional<Blocked>userBlocks=blockRepo.findBlockedByBlockedIdAndBlockerId(users,tweetsUser);
+        Optional<Blocked>tweetsUserBlock=blockRepo.findBlockedByBlockedIdAndBlockerId(tweetsUser,users);
+        return userBlocks.isPresent() || tweetsUserBlock.isPresent();
+    }
+
     public int retweet(long id) {
         Tweets tweets = checkIfExist(id);
         Users users = getCurrentUserService.getCurrentUser();
         Tweets retweet = new Tweets();
+
+        //check if user has blocked tweet's user and vice versa
+        Users tweetsUser=userRepo.findById(tweets.getUsers().getUserId()).orElseThrow();
+        if (checkBlockMutual(users,tweetsUser)){
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "user has blocked you");
+        }
+
+
 
         // inc retweet count of original
         tweets.setRetweetCount(tweets.getRetweetCount() + 1);
@@ -210,6 +241,12 @@ public class TweetsService {
         Users users =getCurrentUserService.getCurrentUser();
 
         Tweets quote = new Tweets();
+
+        //check if user has blocked tweet's user and vice versa
+        Users tweetsUser=userRepo.findById(tweets.getUsers().getUserId()).orElseThrow();
+        if (checkBlockMutual(users,tweetsUser)){
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "user has blocked you");
+        }
 
         // inc quote count of original
         tweets.setQuoteCount(tweets.getQuoteCount() + 1);
@@ -246,6 +283,12 @@ public class TweetsService {
         Users users = getCurrentUserService.getCurrentUser();
 
         Tweets reply = new Tweets();
+
+        //check if user has blocked tweet's user and vice versa
+        Users tweetsUser=userRepo.findById(tweets.getUsers().getUserId()).orElseThrow();
+        if (checkBlockMutual(users,tweetsUser)){
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "user has blocked you");
+        }
 
         // inc reply count
         tweets.setReplyCount(tweets.getReplyCount() + 1);
@@ -285,7 +328,8 @@ public class TweetsService {
 
     public List<Tweets> getReplies(long id) {
         Tweets originalTweet = checkIfExist(id);
-        return tweetsRepo.findTweetsByReplyToTweet(originalTweet);
+        Users users=getCurrentUserService.getCurrentUser();
+        return tweetsRepo.findTweetsByReplyToTweet(originalTweet,users);
     }
 
     public List<UserResponse> getLikes(long id) {
